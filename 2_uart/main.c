@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#define GPIO ((NRF_GPIO_REGS*)0x50000000)
+#define GPIO ((NRF_UART_REGS*)0x40002000)
 typedef struct {
 	volatile uint32_t RESERVED0[321];
 	volatile uint32_t OUT;
@@ -14,7 +14,7 @@ typedef struct {
 	volatile uint32_t DETECTMODE;
 	volatile uint32_t RESERVED1[118];
 	volatile uint32_t PIN_CNF[32];
-} NRF_GPIO_REGS;
+} NRF_UART_REGS;
 
 void button_init(){ 
 	GPIO->PIN_CNF[13] = (3 << 2);

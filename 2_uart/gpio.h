@@ -17,4 +17,8 @@ typedef struct {
 	volatile uint32_t PIN_CNF[32];
 } NRF_GPIO_REG;
 
+void configoutput(){
+	GPIO->DIR = (1 << 6);
+}
+
 #endif
