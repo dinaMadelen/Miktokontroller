@@ -62,6 +62,7 @@ char uart_read() {
     if(!UART->RXDRDY) {
         return '\0';
     }
+    
     char letter = UART->RXD;
     UART->STOPRX = 1;
     return letter;

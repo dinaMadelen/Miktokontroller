@@ -1,62 +1,81 @@
-#include <stdint.h>
+#include "uart.h"
+#include "gpio.h"
+#include <stdio.h>
+#include <sys/types.h>
 
-#define GPIO ((NRF_UART_REGS*)0x40002000)
-typedef struct {
-	volatile uint32_t RESERVED0[321];
-	volatile uint32_t OUT;
-	volatile uint32_t OUTSET;
-	volatile uint32_t OUTCLR;
-	volatile uint32_t IN;
-	volatile uint32_t DIR;
-	volatile uint32_t DIRSET;
-	volatile uint32_t DIRCLR;
-	volatile uint32_t LATCH;
-	volatile uint32_t DETECTMODE;
-	volatile uint32_t RESERVED1[118];
-	volatile uint32_t PIN_CNF[32];
-} NRF_UART_REGS;
+#define UART_INT_RX_pin 8
+#define UART_INT_TX_pin 6
 
-void button_init(){ 
-	GPIO->PIN_CNF[13] = (3 << 2);
-	GPIO->PIN_CNF[14] = (3 << 2);
-	// Fill inn the configuration for the remaining buttons 
+#define BTN_1 13
+#define BTN_2 14
+
+ssize_t _write(int fd, const void *buf, size_t count) {
+    char* letter = (char *)(buf);
+    for(int i = 0; i< count; i++){
+        uart_send(*letter);
+        letter++;
+        int sleep = 10000;
+        while(--sleep);
+    }
+    return count;
 }
 
-int main(){
-	// Configure LED Matrix
-	for(int i = 17; i <= 20; i++){
-		GPIO->DIRSET = (0 << i);
-		GPIO->OUTCLR = (0 << i);
-	}
-	
-	// Configure buttons -> see button_init()
-	button_init();
-	
-	int sleep = 0;
-	while(1){
 
-		/* Check if button 1 is pressed;
-		 * turn on LED matrix if it is. */
-		if (!(GPIO->IN & (1 << 13)))
-		{
-			for (int i = 17; i <= 20; i++)
-			{
-				GPIO->DIRSET = (1 << i);
-				GPIO->OUTCLR = (1 << i);
-			}
-		}
-		/* Check if button 2 is pressed;
-		 * turn off LED matrix if it is. */
-		if (!(GPIO->IN & (1 << 14)))
-		{
-			for (int i = 17; i <= 20; i++)
-			{
-				
-				GPIO->DIRCLR = (1 << i);
-			}
-		}
-		sleep = 10000;
-		while(--sleep); // Delay
+
+int main() {
+    for(int i = 17; i <= 20; i++){
+		GPIO->DIRSET = (1 << i);
+		GPIO->OUTSET = (1 << i); 
 	}
-	return 0;
+
+
+    GPIO->PIN_CNF[13] = (3 << 2);
+	GPIO->PIN_CNF[14] = (3 << 2);
+	GPIO->PIN_CNF[15] = (3 << 2);
+	GPIO->PIN_CNF[16] = (3 << 2);
+
+    uart_init();
+
+    int sleep = 0;
+    char c;
+    while(1){
+        if(!(GPIO->IN & (1 << 13))){
+            uart_send('A');
+            while(!(GPIO->IN & (1 << 13)));
+        }
+        if(!(GPIO->IN & (1 << 14))){
+            uart_send('B');
+            while(!(GPIO->IN & (1 << 14)));
+        }
+        if(!(GPIO->IN & (1 << 15))){
+            iprintf("The average grade in TTK%d in %d was: %c\n\r", 4235, 2022, 'B');
+            while(!(GPIO->IN & (1 << 15)));
+        }
+
+
+
+        c = uart_read();
+        switch(c){
+            case 'A':
+                GPIO->OUTCLR = (1 << 17);
+                GPIO->OUTCLR = (1 << 18);
+                GPIO->OUTCLR = (1 << 19);
+                GPIO->OUTCLR = (1 << 20);
+                break;
+            case 'B':
+                GPIO->OUTSET = (1 << 17);
+                GPIO->OUTSET = (1 << 18);
+                GPIO->OUTSET = (1 << 19);
+                GPIO->OUTSET = (1 << 20);
+                break;
+            default:
+                break;
+        }
+
+
+
+        sleep = 10000;
+        while(--sleep);
+    }
+    return 0;
 }
