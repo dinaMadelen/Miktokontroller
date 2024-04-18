@@ -1,7 +1,7 @@
 #include "gpio.h"
 #include "uart.h"
 
-#define UART ((NRF_UART_REGS*)0x40002000)
+#define UART ((NRF_UART_REG*)0x40002000)
 
 typedef struct {
 	volatile uint32_t STARTRX;
