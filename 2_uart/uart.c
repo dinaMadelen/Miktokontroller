@@ -1,4 +1,5 @@
 #include "gpio.h"
+#include "uart.h"
 
 #define UART ((NRF_UART_REGS*)0x40002000)
 typedef struct {
@@ -40,18 +41,40 @@ typedef struct {
     volatile uint32_t CONFIG;
 }NRF_UART_REG;
 
-void uart_init(){
 
-
+void uart_init() {
+    UART->PSELTXD = 6;
+    UART->PSELRXD = 8;
+    UART->BAUDRATE = 0x00275000;
+    UART->PSELCTS = 0xFFFFFFFF;
+    UART->PSELRTS = 0xFFFFFFFF;
+    UART->ENABLE = 4;
+    UART->STARTRX = 1;
+}
+void uart_send(char letter) {
+    UART->STARTTX = 1;
+    UART->TXD = letter;
+    while(!UART->TXDRDY);
+    UART->STOPTX = 0;
+}
+char uart_read() {
+    UART->STARTRX = 1;
+    if(!UART->RXDRDY) {
+        return '\0';
+    }
+    char letter = UART->RXD;
+    UART->STOPRX = 1;
+    return letter;
 }
 
-void uart_send(char letter){
-
-
-}
-
-char uart_read(){
-
-
+void uart_send_str(char ** str){
+    UART->STARTTX = 1;
+    char * letter_ptr = *str;
+    while(*letter_ptr != '\0'){
+        UART->TXD = *letter_ptr;
+        while(!UART->TXDRDY);
+        UART->TXDRDY = 0;
+        letter_ptr++;
+    }
 }
 
