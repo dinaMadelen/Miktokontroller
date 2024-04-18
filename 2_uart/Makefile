@@ -1,5 +1,5 @@
 FAMILY := nrf52
-SOURCES := main.c # Fill inn missing sources
+SOURCES := main.c uart.c # Fill inn missing sources
 
 BUILD_DIR := build
 BUILD_SYS := .build_system
@@ -52,8 +52,7 @@ erase: $(BUILD_DIR)
 	nrfjprog -f $(FAMILY) --eraseall
 
 clean: $(BUILD_DIR)
-	$(QUIET) rm $(BUILD_DIR)/main.elf
-	$(QUIET) rm $(BUILD_DIR)/main.hex
+	$(QUIET) rm $(BUILD_DIR)/main.{elf,hex}
 
 recover: $(BUILD_DIR)
 	nrfjprog --recover
