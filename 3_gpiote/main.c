@@ -33,8 +33,7 @@ int main(){
     PPI->PPI_CH[3].TEP = (uint32_t)&(GPIOTE->TASKS_OUT[4]); //TaskEndPoint=4(LED4)
 
 
-    while(1){
-        
-    }
+    while(1){    
+    }return 0;
 
 }
